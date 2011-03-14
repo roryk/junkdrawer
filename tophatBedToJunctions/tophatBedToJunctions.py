@@ -103,6 +103,7 @@ def main():
 
     print "Cleaning up temporary files."
     os.remove(tmpfilejuncs)
+    os.remove(tmpfileseq)
 
 if __name__ == "__main__":
     main()
