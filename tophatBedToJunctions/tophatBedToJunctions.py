@@ -56,10 +56,11 @@ def combineJunctionEnds(tmpfilename, outprefix):
     tmpfilein.close()
     outfile = open(outprefix + ".fa", 'w')
     for key in juncdict:
-        header = ">" + key + "\n"
-        seq = juncdict[key] + "\n"
+        header = ">" + key 
+        seq = juncdict[key] 
         outfile.write(header)
         outfile.write(seq)
+        outfile.write("\n")
     outfile.close()
 
     print "Wrote %d junctions of %d total bases." %(junctions, seqlen)
