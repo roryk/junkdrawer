@@ -98,7 +98,7 @@ def main():
     call("fastaFromBed -fi %s -bed %s -s -name -fo %s" %(options.genomefile, tmpfilejuncs, tmpfileseq), shell=True)
 
     print "Combining junction ends."
-    combineJunctionEnds(tmpfileseq)
+    combineJunctionEnds(tmpfileseq, outfile)
 
     print "Cleaning up temporary files."
     os.remove(tmpfilejuncs)
