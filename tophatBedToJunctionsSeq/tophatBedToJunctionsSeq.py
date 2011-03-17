@@ -5,7 +5,7 @@ from subprocess import call
 import time
 import os
 
-def parseTophatJunctions(infn, outfn):
+def parseTophatJunctions(infn, outfn, keeplen):
     infile = open(infn, 'r')
     outfile = open(outfn, 'w')
     junctions = 0
@@ -22,6 +22,12 @@ def parseTophatJunctions(infn, outfn):
             block1end = bl[1] + blockstarts[0] + blocksizes[0]
             block2start = bl[1] + blockstarts[1]
             block2end = bl[1] + blockstarts[1] + blocksizes[1]
+            # trim the reads if the option to do that has been set
+            if keeplen:
+                block1start = block1end - keeplen
+                block2end = block2start + keeplen
+            if (block1start > block1end or block2start > block2end):
+                continue
             outline = (bl[0] + "\t" + str(block1start) + "\t" + str(block1end) +
                        "\t" + bl[3] + "\t" + bl[4] + "\t" + bl[5])
             outfile.write(outline + '\n')
@@ -74,6 +80,8 @@ def main():
                        help="output prefix")
     parser.add_option("-g", dest="genomefile", 
                        help="genome filename (FASTA format)")
+    parser.add_options("-t", dest="keeplen", default=0,
+                       help="keep only this many bases per side of junction")
     (options, args) = parser.parse_args()
 
     if options.filename is None:
@@ -94,7 +102,7 @@ def main():
         
         
     tmpfilejuncs = "tmpjunctionfile" + str(time.time())
-    parseTophatJunctions(options.filename, tmpfilejuncs)
+    parseTophatJunctions(options.filename, tmpfilejuncs, options.keeplen)
     tmpfileseq = "tmpseqfile" + str(time.time())
                                            
     print "Looking up sequences in %s with fastaFromBed." %(options.genomefile)
