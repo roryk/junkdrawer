@@ -2,8 +2,6 @@
 tophatBedToJunctionSeq
 ======================
 
-** this currently has a show stopper bug in it **
-
 Takes a Tophat .juncs file and a genome in FASTA format and outputs
 the sequences making up the junction.
 
