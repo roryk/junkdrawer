@@ -98,7 +98,7 @@ def main():
     tmpfileseq = "tmpseqfile" + str(time.time())
                                            
     print "Looking up sequences in %s with fastaFromBed." %(options.genomefile)
-    call("fastaFromBed -fi %s -bed %s -s -name -fo %s" %(options.genomefile, tmpfilejuncs, tmpfileseq), shell=True)
+    call("fastaFromBed -fi %s -bed %s -name -fo %s" %(options.genomefile, tmpfilejuncs, tmpfileseq), shell=True)
 
     print "Combining junction ends."
     combineJunctionEnds(tmpfileseq, options.outfile)
