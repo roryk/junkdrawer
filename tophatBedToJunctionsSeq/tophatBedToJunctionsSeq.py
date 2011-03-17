@@ -9,6 +9,7 @@ def parseTophatJunctions(infn, outfn, keeplen):
     infile = open(infn, 'r')
     outfile = open(outfn, 'w')
     junctions = 0
+    kept = 0
     for line in infile:
         if 'track name' not in line:
             junctions = junctions + 1
@@ -28,6 +29,7 @@ def parseTophatJunctions(infn, outfn, keeplen):
                 block2end = block2start + keeplen
             if (block1start > block1end or block2start > block2end):
                 continue
+            kept = kept + 1
             outline = (bl[0] + "\t" + str(block1start) + "\t" + str(block1end) +
                        "\t" + bl[3] + "\t" + bl[4] + "\t" + bl[5])
             outfile.write(outline + '\n')
@@ -37,6 +39,7 @@ def parseTophatJunctions(infn, outfn, keeplen):
     infile.close()
     outfile.close()
     print "Read in %d junctions." %(junctions)
+    print "Kept %d junctions. (%f)" %(kept, float(kept)/float(junctions))
 
 def combineJunctionEnds(tmpfilename, outprefix):
     """
