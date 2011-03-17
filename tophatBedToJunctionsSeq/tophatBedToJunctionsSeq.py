@@ -80,7 +80,7 @@ def main():
                        help="output prefix")
     parser.add_option("-g", dest="genomefile", 
                        help="genome filename (FASTA format)")
-    parser.add_options("-t", dest="keeplen", default=0,
+    parser.add_option("-t", dest="keeplen", default=0,
                        help="keep only this many bases per side of junction")
     (options, args) = parser.parse_args()
 
