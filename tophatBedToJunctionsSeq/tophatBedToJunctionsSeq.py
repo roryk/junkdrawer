@@ -102,7 +102,7 @@ def main():
         
         
     tmpfilejuncs = "tmpjunctionfile" + str(time.time())
-    parseTophatJunctions(options.filename, tmpfilejuncs, options.keeplen)
+    parseTophatJunctions(options.filename, tmpfilejuncs, int(options.keeplen))
     tmpfileseq = "tmpseqfile" + str(time.time())
                                            
     print "Looking up sequences in %s with fastaFromBed." %(options.genomefile)
