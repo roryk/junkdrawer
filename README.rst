@@ -14,5 +14,6 @@ Options:
   -f FILENAME    tophat junctions bed file
   -o OUTFILE     output prefix
   -g GENOMEFILE  genome filename (FASTA format)
-
+  -t SIZE	 # of bases to keep on each side of splice junction
+     		 this is optional
 .. _BEDTools: http://code.google.com/p/bedtools/
