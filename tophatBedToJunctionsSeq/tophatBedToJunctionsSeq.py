@@ -5,6 +5,42 @@ from subprocess import call
 import time
 import os
 
+def parseTophatBedLineToDict(line):
+    linedict = {}
+    bl = line.split('\t')
+    blocksizes = bl[10].split(',')
+    blockstarts = bl[11].split(',')
+    linedict['blockstarts'] = [int(x) for x in blockstarts]
+    linedict['blocksizes'] = [int(x) for x in blocksizes]
+    linedict['chromStart'] = int(bl[1])
+    linedict['chromEnd'] = int(bl[2])
+    linedict['name'] = bl[3]
+    linedict['score'] = bl[4]
+    linedict['strand'] = bl[5]
+    linedict['chrom'] = bl[0]
+    return(linedict)
+
+def convertTophatBedToJuncs(infn, outfn):
+    infile = open(infn, 'r')
+    outfile = open(outfn, 'w')
+    junctions = 0
+    for line in infile:
+        if 'track name' not in line:
+            junctions = junctions + 1
+            linedict = parseTophatBedLineToDict(line)
+            chrom = linedict['chrom']
+            left = linedict['chromStart'] + linedict['blocksizes'][0]
+            right = linedict['chromEnd'] - linedict['blocksizes'][1]
+            strand = linedict['strand']
+            outline = (chrom + "\t" + str(left) + "\t" + str(right) + "\t"
+                       + strand)
+            outfile.write(outline + '\n')
+
+    infile.close()
+    outfile.close()
+    print "Processed in %d junctions." %(junctions)    
+            
+    
 def parseTophatJunctions(infn, outfn, keeplen):
     infile = open(infn, 'r')
     outfile = open(outfn, 'w')
