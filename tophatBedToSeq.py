@@ -29,8 +29,8 @@ def formatExtendedJunc(linedict, offset):
     score = str(linedict['score'])
 
     id = ":".join([chrom, left, right, strand])
-    outleft = "\t".join([chrom, left_off, left, strand, id, score])
-    outright = "\t".join([chrom, right, right_off, strand, id, score])
+    outleft = "\t".join([chrom, left_off, left, id, score, strand])
+    outright = "\t".join([chrom, right, right_off, id, score, strand])
     return (outleft, outright)
 
 def convertTophatBedToExtendedJuncs(infn, outfn, offset):
@@ -53,7 +53,8 @@ def convertTophatBedToExtendedJuncs(infn, outfn, offset):
 
 def convertExtendedJuncsToSeq(infn, outfn, genfn):
 
-    call("fastaFromBed -fi %s -bed %s -name -fo %s" %(infn, outfn, genfn))
+    call("fastaFromBed -fi %s -bed %s -name -fo %s" %(genfn, infn, outfn),
+         shell=True)
 
     
 def combineJunctionEnds(seqfn):
@@ -112,16 +113,20 @@ def main():
             print "%s cannot be found." %(options.genomefile)
             exit(-1)
 
+    options.keeplen = int(options.keeplen)
     if options.keeplen is 0:
         print parser.print_help()
 
-    juncfn = options.infn + ".juncs"
-    seqfn = options.infn + ".fa"
+    inprefix = options.infn.rsplit(".", 1)[0]
+    juncfn = inprefix + ".ejuncs"
+    seqfn = inprefix + ".fa"
 
     if os.path.isfile(juncfn):
         print "%s already exists, aborting." %(juncfn)
+        exit(-1)
 
     if os.path.isfile(seqfn):
+        exit(-1)
         print "%s already exists, aborting." %(seqfn)
 
     print "Reading in junctions."
