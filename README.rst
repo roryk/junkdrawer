@@ -1,19 +1,17 @@
+================
+tophatBedToJuncs
+================
+Takes a Tophat junctions.bed file and converts it to the raw .juncs 
+format, adding a junction-location unique junction ID. This makes for
+easy comparison of junctions across different junction files using
+standard command line utilities.
+
 ======================
-tophatBedToJunctionSeq
+tophatBedToSeq
 ======================
+Takes a Tophat junctions.bed file and converts it to a FASTA file of
+sequences specifying the junctions. Takes a parameter to determine
+the size of the sequences to return. It is required that fastaFromBed
+from the BEDTools_ package is installed and in your path.
 
-Takes a Tophat .juncs file and a genome in FASTA format and outputs
-the sequences making up the junction.
-
-Requires that fastaFromBed from BEDTools_ be installed and executable.
-
-Usage: tophatBedToJunctionsSeq.py [options]
-
-Options:
-  -h, --help     show this help message and exit
-  -f FILENAME    tophat junctions bed file
-  -o OUTFILE     output prefix
-  -g GENOMEFILE  genome filename (FASTA format)
-  -t SIZE	 # of bases to keep on each side of splice junction
-     		 this is optional
 .. _BEDTools: http://code.google.com/p/bedtools/
