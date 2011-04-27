@@ -39,7 +39,7 @@ def outputGTF(gtflines, outfn):
                              line['feature'], line['start'],
                              line['end'], line['score'],
                              line['strand'], line['unknown'],
-                             line['attribute']]) + "\n"
+                             line['attribute']])
         outfile.write(outline)
         written = written + 1
 
@@ -103,6 +103,9 @@ def filterGTFByTracking(gtflines, tracklines):
     for line in gtflines:
         processed = processed + 1
         if line['transcript_id'] in idset:
+            newgtf.append(line)
+            kept = kept + 1
+        elif line['class_code'] == "=":
             newgtf.append(line)
             kept = kept + 1
             
