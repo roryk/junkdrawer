@@ -18,7 +18,7 @@ def outputTracking(tracklines, outfn):
     print "Wrote %d lines to %s." %(written, outfn)
 
 def parseTracklineToDict(line):
-    line = line.split("\t")
+    line = line.strip().split("\t")
     # first 4 columns are mandatory, the rest contain the sample info
     nsamples = len(line) - 4
     line = [nsamples] + line
@@ -129,7 +129,8 @@ def enoughSamples(linedict, threshold):
     returns true if the number of samples supporting the transcript is
     greater than or equal to the threshold and false otherwise
     """
-    support = linedict.values().count("-")
+
+    support = linedict['nsamples'] - linedict.values().count("-")
     return(support >= threshold)
         
                
