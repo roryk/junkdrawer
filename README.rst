@@ -14,4 +14,12 @@ sequences specifying the junctions. Takes a parameter to determine
 the size of the sequences to return. It is required that fastaFromBed
 from the BEDTools_ package is installed and in your path.
 
+=================
+filterCuffCompare
+=================
+Takes a tracking file from Cuffcompare and a combined.gtf file from
+Cuffcompare and retains transcripts with a specified number of samples
+supporting evidence of the transcript. Useful for wiping out a lot of the
+junky partially-assembled transcripts that Cufflinks spits out.
+
 .. _BEDTools: http://code.google.com/p/bedtools/
