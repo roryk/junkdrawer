@@ -19,7 +19,8 @@ filterCuffCompare
 =================
 Takes a tracking file from Cuffcompare and a combined.gtf file from
 Cuffcompare and retains transcripts with a specified number of samples
-supporting evidence of the transcript. Useful for wiping out a lot of the
+supporting evidence of the transcript. This also retains all transcripts
+that match the reference annotation. Useful for wiping out a lot of the
 junky partially-assembled transcripts that Cufflinks spits out.
 
 .. _BEDTools: http://code.google.com/p/bedtools/
