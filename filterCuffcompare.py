@@ -126,7 +126,6 @@ def filterByNumsamples(tracklines, threshold):
     print "%d lines had at least %d samples of support." %(kept, threshold)
     return keptlines
 
-
 def enoughSamples(linedict, threshold):
     """
     returns true if the number of samples supporting the transcript is
@@ -176,4 +175,3 @@ def main():
     outputGTF(gtflines, gtfout)
 if __name__ == "__main__":
     main()
-    
