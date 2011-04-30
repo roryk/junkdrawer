@@ -30,4 +30,9 @@ exons in the longest transcript for that locus. Takes -f a gtf file and
 pass if 3 are in the transcript and fail if only 1 exon is in the
 transcript if -t is set to .30.
 
+editAttributes
+==============
+Deletes or swaps attributes in the attribute line of a GTF file. -d deletes the
+attributes. -r and -s replaces the attributes in -r with the ones in -s.
+
 .. _BEDTools: http://code.google.com/p/bedtools/
