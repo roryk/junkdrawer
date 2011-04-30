@@ -1,6 +1,7 @@
 from optparse import OptionParser
 from collections import Counter
 from sets import Set
+from gtfUtils import GTFtoDict, outputGTF
 import os
 
 def outputTracking(tracklines, outfn):
@@ -30,54 +31,7 @@ def parseTracklineToDict(line):
     linedict = dict(zip(keys, line))
     return linedict
 
-def outputGTF(gtflines, outfn):
-    print "Writing GTF file."
-    outfile = open(outfn, 'w')
-    written = 0
-    for line in gtflines:
-        
-        outline = "\t".join([line['seqname'], line['source'],
-                             line['feature'], line['start'],
-                             line['end'], line['score'],
-                             line['strand'], line['unknown'],
-                             line['attribute']])
-        outfile.write(outline)
-        written = written + 1
-
-    outfile.close()
-    print "Wrote %d lines to %s." %(written, outfn)
     
-def parseGTFlineToDict(line):
-    values = line.split("\t")
-    keys = ["seqname", "source", "feature", "start", "end", "score",
-            "strand", "unknown", "attribute"]
-    linedict = dict(zip(keys, values))
-    return linedict
-
-def parseTophatGTFlineToDict(line):
-    linedict = parseGTFlineToDict(line)
-    attributes = linedict["attribute"].split(";")
-    del attributes[-1]
-    attributes = [x.strip() for x in attributes]
-    
-    for attrib in attributes:
-        attr = attrib.strip().split(" ")
-        linedict[attr[0]] = attr[1].strip("\"")
-    return linedict
-
-def parseTophatGTF(gtf):
-    print "Parsing GTF file."
-    gtflines = []
-    gfile = open(gtf, 'r')
-    numlines = 0
-    for line in gfile:
-        numlines = numlines + 1
-        gtflines.append(parseTophatGTFlineToDict(line))
-
-    print "Processed %d lines in %s." %(numlines, gtf)
-    gfile.close()
-
-    return gtflines
     
 def parseTracking(track):
     print "Parsing tracking file."
@@ -233,7 +187,7 @@ def main():
         print parser.print_help()
         exit(-1)
         
-    gtflines = parseTophatGTF(options.gtf)
+    gtflines = GTFtoDict(options.gtf)
     if options.samples > 0:
         tracklines = parseTracking(options.tracking)
         tracklines = filterByNumsamples(tracklines, int(options.samples))
