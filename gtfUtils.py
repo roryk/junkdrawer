@@ -1,13 +1,33 @@
 def swapAttributes(gtflines, source, replace):
     # XXX not finished
-    return gtflines
+    newlines = []
+    repdict = dict(zip(replace, source))
+    for line in gtflines:
+        attrdict = attributeToDict(line)
+        newdict = attrdict.copy()
+        for r, s in repdict.items():
+            newdict[r] = attrdict[s]
+            line[r] = attrdict[s]
+        line['attribute'] = buildAttributeFieldFromDict(newdict)
+        newlines.append(line)
+            
+    return newlines
 
 def delAttributes(gtflines, delete):
-    # XXX not finished
-    return gtflines
+    newlines = []
+    for line in gtflines:
+        attrdict = attributeToDict(line)
+        for x in delete:
+            if x in attrdict:
+                del attrdict[x]
+            if x in line:
+                del line[x]
+            line['attribute'] = buildAttributeFieldFromDict(attrdict)
+        newlines.append(line)
+    return newlines
 
 def GTFtoDict(infn):
-    print "Parsing the GTF file %s."
+    print "Parsing the GTF file %s." %(infn)
     gtflines = []
     infile = open(infn, 'r')
     numlines = 0
@@ -19,6 +39,17 @@ def GTFtoDict(infn):
     infile.close()
 
     return gtflines
+
+def buildAttributeFieldFromDict(attrdict):
+    z = [x[0] + " " + x[1] for x in attrdict.items()]
+    return("; ".join(z) + "\n")
+        
+def attributeToDict(linedict):
+    attributes = linedict["attribute"].split(";")
+    del attributes[-1]
+    attributes = [x.strip() for x in attributes]
+
+    return dict([x.strip().split(" ") for x in attributes])
 
 def addAttributesToGTFline(linedict):
     attributes = linedict["attribute"].split(";")
