@@ -35,4 +35,9 @@ editAttributes
 Deletes or swaps attributes in the attribute line of a GTF file. -d deletes the
 attributes. -r and -s replaces the attributes in -r with the ones in -s.
 
+ensembl_cleaner
+===============
+Fixes the GTF file from Ensembl for use with Tophat and Cufflinks by putting
+in a consistent set of chromosome names.
+
 .. _BEDTools: http://code.google.com/p/bedtools/
