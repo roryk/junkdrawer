@@ -1,5 +1,50 @@
+from sets import Set
+import logging
+
+def filterAttributes(gtflines, ffn):
+    ffile = open(ffn, 'r')
+    header = ffile.readline().strip()
+    filter_set = Set()
+    for line in ffile:
+        filter_set.add(line.strip())
+
+    newlines = []
+    for line in gtflines:
+        attrdict = attributeToDict(line)
+        if not (header in attrdict):
+            newlines.append(line)
+            continue
+        id = attrdict[header].replace("\"", "")
+        if id in filter_set:
+            newlines.append(line)
+    
+    return newlines
+
+def addAttribute(gtflines, afn):
+    afile = open(afn, 'r')
+    header = afile.readline()
+    header = header.split("\t")
+    logging.info("Attaching %s to %s." %(header[1], header[0]))
+    linedict = {}
+    for line in afile:
+        line = line.split("\t")
+        linedict[line[0]] = line[1]
+
+    newlines = []
+    for line in gtflines:
+        attrdict = attributeToDict(line)
+        if not (header[0] in attrdict):
+            newlines.append(line)
+            continue
+        
+        id = attrdict[header[0]].replace("\"", "")
+        attrdict[header[1].strip()] = "\"" + linedict[id].strip() + "\""
+        line['attribute'] = buildAttributeFieldFromDict(attrdict)
+        newlines.append(line)
+
+    return newlines
+
 def swapAttributes(gtflines, source, replace):
-    # XXX not finished
     newlines = []
     repdict = dict(zip(replace, source))
     for line in gtflines:
@@ -27,7 +72,7 @@ def delAttributes(gtflines, delete):
     return newlines
 
 def GTFtoDict(infn):
-    print "Parsing the GTF file %s." %(infn)
+    logging.info("Parsing the GTF file %s." %(infn))
     gtflines = []
     infile = open(infn, 'r')
     numlines = 0
@@ -35,7 +80,7 @@ def GTFtoDict(infn):
         numlines = numlines + 1
         gtflines.append(parseGTFlineToDict(line))
 
-    print "Processed %d lines in %s." %(numlines, infn)
+    logging.info("Processed %d lines in %s." %(numlines, infn))
     infile.close()
 
     return gtflines
@@ -46,8 +91,7 @@ def buildAttributeFieldFromDict(attrdict):
         
 def attributeToDict(linedict):
     attributes = linedict["attribute"].split(";")
-    del attributes[-1]
-    attributes = [x.strip() for x in attributes]
+    attributes = filter(lambda x: x != "\n", attributes)
 
     return dict([x.strip().split(" ") for x in attributes])
 
@@ -71,9 +115,9 @@ def parseGTFlineToDict(line):
     return linedict
 
 def outputGTF(gtflines, outfn):
-    print "Writing GTF file."
-    outfile = open(outfn, 'w')
+    logging.info("Writing GTF file.")
     written = 0
+    outfile = open(outfn, 'w')
     for line in gtflines:
         
         outline = "\t".join([line['seqname'], line['source'],
@@ -83,6 +127,6 @@ def outputGTF(gtflines, outfn):
                              line['attribute']])
         outfile.write(outline)
         written = written + 1
-
+        
     outfile.close()
-    print "Wrote %d lines to %s." %(written, outfn)
+    logging.info("Wrote %d lines to %s." %(written, outfn))

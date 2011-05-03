@@ -20,20 +20,18 @@ combined.gtf file from Cuffcompare and retains transcripts with a
 specified number of samples supporting evidence of the
 transcript. This also retains all transcripts that match the reference
 annotation. Useful for wiping out a lot of the junky
-partially-assembled transcripts that Cufflinks spits out. Takes
--s, the number of samples a transcript must exist in, -f a gtf file and
--t a tracking file.
+partially-assembled transcripts that Cufflinks spits out. 
 
 The second mode filters transcripts based on their proportion of
-exons in the longest transcript for that locus. Takes -f a gtf file and
--e the threshold proportion. For example a locus with 4 exons will
+exons in the longest transcript for that locus. Takes a gtf file and
+the threshold proportion. For example a locus with 4 exons will
 pass if 3 are in the transcript and fail if only 1 exon is in the
-transcript if -t is set to .30.
+transcript if the threshold is set to .30.
 
 editAttributes
 ==============
-Deletes or swaps attributes in the attribute line of a GTF file. -d deletes the
-attributes. -r and -s replaces the attributes in -r with the ones in -s.
+Deletes, swaps, adds GTFs to the attribute line of a GTF file. Can also
+filter on an attribute.
 
 ensembl_cleaner
 ===============
