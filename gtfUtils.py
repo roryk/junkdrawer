@@ -1,6 +1,7 @@
 from sets import Set
 import logging
 
+
 def filterAttributes(gtflines, ffn):
     ffile = open(ffn, 'r')
     header = ffile.readline().strip()
@@ -19,6 +20,16 @@ def filterAttributes(gtflines, ffn):
             newlines.append(line)
     
     return newlines
+
+def reorderAttributes(gtflines, order):
+    newlines = []
+    order = order.split(" ")
+    for line in gtflines:
+        attrdict = attributeToDict(line)
+        line['attribute'] = buildAttributeFieldFromDictWithOrder(attrdict,
+                                                                 order)
+        newlines.append(line)
+    return(newlines)
 
 def addAttribute(gtflines, afn):
     afile = open(afn, 'r')
@@ -88,6 +99,20 @@ def GTFtoDict(infn):
 def buildAttributeFieldFromDict(attrdict):
     z = [x[0] + " " + x[1] for x in attrdict.items()]
     return("; ".join(z) + "\n")
+
+def buildAttributeFieldFromDictWithOrder(attrdict, order):
+    f = [0 for i in order]
+    e = []
+    for item in attrdict.items():
+        if item[0] in order:
+            f[order.index(item[0])] = item
+        else:
+            e.append(item)
+    f = [x for x in f if x != 0]
+    g = f + e
+    z = [x[0] + " " + x[1] for x in g]
+    return("; ".join(z) + "\n")
+    
         
 def attributeToDict(linedict):
     attributes = linedict["attribute"].split(";")

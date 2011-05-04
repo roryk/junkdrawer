@@ -1,5 +1,5 @@
 from gtfUtils import GTFtoDict, outputGTF, swapAttributes, delAttributes
-from gtfUtils import addAttribute, filterAttributes
+from gtfUtils import addAttribute, filterAttributes, reorderAttributes
 from argparse import ArgumentParser
 import os
 import logging
@@ -33,6 +33,8 @@ def main():
     parser.add_argument("-o", "--output", dest="output", default=False,
                         type=str, required=True,
                         help="output filename")
+    parser.add_argument("-m", "--move", dest="move", default=False,
+                        help="list of attributes to move to the front")
     args = parser.parse_args()
 
     if not os.path.isfile(args.gtf):
@@ -53,7 +55,7 @@ def main():
             exit(-1)
 
     if not (args.source or args.replace or args.delete or
-            args.add or args.filter):
+            args.add or args.filter or args.move):
         logging.error("Must provide at least one action.")
         parser.print_help()
         exit(-1)
@@ -77,7 +79,11 @@ def main():
     if args.filter:
         logging.info("Filtering by attribute in file %s." %(args.filter))
         gtflines = filterAttributes(gtflines, args.filter)
-        
+
+    if args.move:
+        logging.info("Moving %s to the front of the attributes." %(args.move))
+        gtflines = reorderAttributes(gtflines, args.move)
+
     outputGTF(gtflines, args.output)
     
 if __name__ == "__main__":

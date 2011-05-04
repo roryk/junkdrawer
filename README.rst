@@ -31,7 +31,7 @@ transcript if the threshold is set to .30.
 editAttributes
 ==============
 Deletes, swaps, adds GTFs to the attribute line of a GTF file. Can also
-filter on an attribute.
+filter on an attribute and reorder the attributes field.
 
 ensembl_cleaner
 ===============
