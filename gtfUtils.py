@@ -1,6 +1,76 @@
 from sets import Set
 import logging
 
+def filterByMinLength(gtflines, size):
+    newlines = []
+    lengths = calculateLengths(gtflines)
+    total = 0
+    kept = 0
+    for line in gtflines:
+        total = total + 1
+        if line['transcript_id'] not in lengths:
+            kept = kept + 1
+            newlines.append(line)
+            continue
+        if lengths[line['transcript_id']] < size:
+            continue
+        kept = kept + 1
+        newlines.append(line)
+
+    logging.info("%d out of %d lines had a size greater than " \
+                 "%d." %(kept, total, size))
+    return newlines
+
+def filterByMaxLength(gtflines, size):
+    newlines = []
+    lengths = calculateLengths(gtflines)
+    total = 0
+    kept = 0
+    for line in gtflines:
+        total = total + 1
+        if line['transcript_id'] not in lengths:
+            kept = kept + 1
+            newlines.append(line)
+            continue
+        if lengths[line['transcript_id']] > size:
+            continue
+        kept = kept + 1
+        newlines.append(line)
+
+    logging.info("%d out of %d lines had a size less than " \
+                 "%d." %(kept, total, size))
+    return newlines
+
+def calculateLengths(gtflines):
+    """
+    calculate the lengths of each transcript in the gtf file by
+    summing up the length of all the exons in the transcript
+    """
+    lengths = {}
+    total_transcripts = 0
+    for line in gtflines:
+        if line['feature'] != "exon":
+            continue
+        size = abs(int(line['end']) - int(line['start']))
+        if line['transcript_id'] not in lengths:
+            total_transcripts = total_transcripts + 1
+            lengths[line['transcript_id']] = size
+        else:
+            lengths[line['transcript_id']] = lengths[line['transcript_id']] + \
+                                             size
+
+    logging.info("Processed %d transcripts." %(total_transcripts))
+    return lengths
+
+def outputLengths(lengths, outfn):
+    outfile = open(outfn, 'w')
+    written = 0
+    for l in lengths.iteritems():
+        written = written + 1
+        l = [str(x) for x in l]
+        outfile.write("\t".join(l) + "\n")
+    logging.info("Wrote %d lines to %s." %(written, outfn))
+    outfile.close()
 
 def filterAttributes(gtflines, ffn):
     ffile = open(ffn, 'r')
