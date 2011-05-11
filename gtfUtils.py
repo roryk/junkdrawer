@@ -8,6 +8,10 @@ def filterByMinLength(gtflines, size):
     kept = 0
     for line in gtflines:
         total = total + 1
+        if 'transcript_id' not in line:
+            kept = kept + 1
+            newlines.append(line)
+            continue
         if line['transcript_id'] not in lengths:
             kept = kept + 1
             newlines.append(line)
@@ -28,6 +32,10 @@ def filterByMaxLength(gtflines, size):
     kept = 0
     for line in gtflines:
         total = total + 1
+        if 'transcript_id' not in line:
+            kept = kept + 1
+            newlines.append(line)
+            continue
         if line['transcript_id'] not in lengths:
             kept = kept + 1
             newlines.append(line)
@@ -52,6 +60,8 @@ def calculateLengths(gtflines):
         if line['feature'] != "exon":
             continue
         size = abs(int(line['end']) - int(line['start']))
+        if 'transcript_id' not in line:
+            continue
         if line['transcript_id'] not in lengths:
             total_transcripts = total_transcripts + 1
             lengths[line['transcript_id']] = size
