@@ -38,4 +38,13 @@ ensembl_cleaner
 Fixes the GTF file from Ensembl for use with Tophat and Cufflinks by putting
 in a consistent set of chromosome names.
 
+transcriptLength
+================
+Calculates the length of all transcripts in a GTF file by adding up all
+of the 'exons' features for each transcript. Also can filter a GTF file
+by minimum and maximum transcript lengths. This is useful for removing
+small transcripts that may be lost during RNA purification such as 
+microRNA and snoRNA and also to remove large transcripts that may be
+degraded.
+
 .. _BEDTools: http://code.google.com/p/bedtools/
