@@ -142,8 +142,9 @@ def swapAttributes(gtflines, source, replace):
         attrdict = attributeToDict(line)
         newdict = attrdict.copy()
         for r, s in repdict.items():
-            newdict[r] = attrdict[s]
-            line[r] = attrdict[s]
+            if s in attrdict:
+                newdict[r] = attrdict[s]
+                line[r] = attrdict[s]
         line['attribute'] = buildAttributeFieldFromDict(newdict)
         newlines.append(line)
             

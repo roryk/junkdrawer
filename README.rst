@@ -47,4 +47,10 @@ small transcripts that may be lost during RNA purification such as
 microRNA and snoRNA and also to remove large transcripts that may be
 degraded.
 
+transcript_per_gene_counter
+===========================
+counts up the number of transcripts per gene in a GTF file. the GTF file
+must have the format gene_id foo; transcript_id bar, otherwise it won't
+work.
+
 .. _BEDTools: http://code.google.com/p/bedtools/
