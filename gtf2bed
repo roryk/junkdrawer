@@ -1,11 +1,11 @@
 #!/bin/bash
 #
-# Converts a GTF file to a BED file
+# Converts a GTF file to a BED file of unique ranges
 #
 
-if [ $# -lt 2 ]; then
+if [ $# -lt 1 ]; then
     echo "usage: $0 in.gtf"
     exit 1
 fi
 
-awk {'print $1"\t"$4"\t"$5"\t"$1$4":"$5"\t"$6"\t"$7'} $1
+awk {'print $1"\t"$4"\t"$5"\t"$1$4":"$5"\t"$6"\t"$7'} $1 | uniq | sort | uniq

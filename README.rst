@@ -53,4 +53,8 @@ counts up the number of transcripts per gene in a GTF file. the GTF file
 must have the format gene_id foo; transcript_id bar, otherwise it won't
 work.
 
+gtf2bed
+=======
+converts a gtf file to a bed file of unique intervals
+
 .. _BEDTools: http://code.google.com/p/bedtools/
