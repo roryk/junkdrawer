@@ -18,13 +18,17 @@ def lookupSequences(files):
             if feature.sub_features == []:
                 seq = lookup_sequence(files, feature, chrom)
                 id = feature.qualifiers['transcript_id'][0]
+                strand = feature.strand
 
             else:
                 seq = Seq("", generic_dna)
                 id = feature.id
                 for subf in feature.sub_features:
                     seq = seq + lookup_sequence(files, subf, chrom)
-
+                strand = subf.strand
+            if strand is -1:
+                seq = seq.reverse_complement()
+                
             records.append(SeqRecord(seq, id=id))
     SeqIO.write(records, sys.stdout, "fasta")
             
@@ -33,7 +37,7 @@ def lookup_sequence(files, feature, chrom):
     use samtools to look up the sequence
     """
     args = [files['samtools'], "faidx", files['seq_file'], str(chrom) +
-            ":" + str(feature.location.start) + "-" +
+            ":" + str(int(str(feature.location.start))+1) + "-" +
             str(feature.location.end)]
 
     child = subprocess.Popen(args, stdout=subprocess.PIPE)
@@ -44,13 +48,7 @@ def lookup_sequence(files, feature, chrom):
         seq = seq + line.strip()
     seq = Seq(seq, generic_dna)
 
-    if feature.strand is 1:
-        return seq
-    elif feature.strand is -1:
-        return seq.reverse_complement()
-    else:
-        print "strand is not 1 or -1, something is wrong"
-        exit(-1)
+    return seq
 
 def which(program):
     import os
