@@ -57,4 +57,9 @@ gtf2bed
 =======
 converts a gtf file to a bed file of unique intervals
 
+gtf2fasta
+=========
+converts a gtf file to a file of fasta sequences of the transcripts.
+it is required that the attribute list contains a transcript_id.
+
 .. _BEDTools: http://code.google.com/p/bedtools/
