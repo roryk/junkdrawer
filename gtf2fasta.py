@@ -51,7 +51,6 @@ def lookup_sequence(files, feature, chrom):
     return seq
 
 def which(program):
-    import os
     
     def is_exe(fpath):
         return os.path.exists(fpath) and os.access(fpath, os.X_OK)
