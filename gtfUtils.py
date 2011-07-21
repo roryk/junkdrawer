@@ -225,14 +225,120 @@ def outputGTF(gtflines, outfn):
     written = 0
     outfile = open(outfn, 'w')
     for line in gtflines:
-        
-        outline = "\t".join([line['seqname'], line['source'],
-                             line['feature'], line['start'],
-                             line['end'], line['score'],
-                             line['strand'], line['unknown'],
-                             line['attribute']])
+        outline = formatGTFLine(line)
         outfile.write(outline)
         written = written + 1
         
     outfile.close()
     logging.info("Wrote %d lines to %s." %(written, outfn))
+
+def formatGTFLine(line):
+    outline = "\t".join([line['seqname'], line['source'],
+                         line['feature'], line['start'],
+                         line['end'], line['score'],
+                         line['strand'], line['unknown'],
+                         line['attribute']])
+    return outline
+
+
+def outputGTFout(gtflines):
+    import sys
+    logging.info("Writing GTF file.")
+    written = 0
+    for line in gtflines:
+        outline = formatGTFLine(line)
+        sys.stdout.write(outline)
+        written = written + 1
+    logging.info("Wrote %d lines." %(written))
+
+def aggregateFeaturesByTranscript(gtflines):
+    """
+    aggregates a set of features by transcript_id
+    if transcript_id does not exist it deletes the line
+    sorts the features under a transcript by start site
+    adds a start-end tuple to each transcript indicating where
+    in the transcript each feature is (referenced to the mRNA, not
+    the genome)
+    """
+    transcripts = {}
+    for line in gtflines:
+        if 'transcript_id' not in line:
+            continue
+        transcript_id = line['transcript_id']
+        if transcript_id not in transcripts:
+            transcripts[transcript_id] = [line]
+        else:
+            index = len(transcripts[transcript_id]) - 1
+
+            while (transcripts[transcript_id][index]['start'] >
+                   line['start']):
+                index = index - 1
+                if index == -1:
+                    break
+                
+            transcripts[transcript_id].insert(index + 1, line)
+    
+    return transcripts
+
+def addFeatureCoordinatesToTranscripts(transcripts):
+
+    for trans_id in transcripts:
+        start = 0
+        for feature in transcripts[trans_id]:
+            length = int(feature['end']) - int(feature['start']) + 1
+            feature['fstart'] = start + 1
+            feature['fend'] = start + length
+            start = feature['fend']
+            
+    return transcripts
+
+def orderFeaturesByTranscript(gtflines):
+    """
+    orders a set of features in each transcript by start site
+    transcripts are not ordered
+    """
+    transcripts = aggregateFeaturesByTranscript(gtflines)
+    new_gtflines = []
+    for transcript in transcripts:
+        for feature in transcript:
+            new_gtflines.append(feature)
+    return new_gtflines
+
+def orderTranscriptsByChromosome(transcripts):
+    """
+    orders a set of transcripts by chromosome
+    """
+    chromosomes = {}
+    for trans_id in transcripts.keys():
+        seqname = transcripts[trans_id][0]['seqname']
+        if seqname not in chromosomes:
+            chromosomes[seqname] = [trans_id]
+        else:
+            index = len(chromosomes[seqname]) - 1
+            ss = transcripts[chromosomes[seqname][index]][0]['start']
+
+            while(int(ss) > int(transcripts[trans_id][0]['start'])):
+                index = index - 1
+                if index == -1:
+                    break
+                ss = transcripts[chromosomes[seqname][index]][0]['start']
+            chromosomes[seqname].insert(index + 1, trans_id)
+
+    return chromosomes
+
+def unwindChromosomes(chromosomes, transcripts):
+    gtflines = []
+
+    chromosomelist = chromosomes.keys()
+    chromosomelist.sort()
+
+    for chromosome in chromosomelist:
+        transcript_list = chromosomes[chromosome]
+        for transcript_id in transcript_list:
+            for gtfline in transcripts[transcript_id]:
+                gtflines.append(gtfline)
+
+    return gtflines
+            
+
+

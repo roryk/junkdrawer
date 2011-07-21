@@ -17,13 +17,15 @@ def calculateJunctionEnds(linedict):
     """
     calculates the last base of the left end of the splice junction and the
     first base of the right end of the splice junction
+    this is 0 based.
     arguments: linedict a line dictionary
     returns: linedict augmented with 'left' and 'right' entries
     """
     left = linedict['chromStart'] + linedict['blocksizes'][0]
     right = linedict['chromStart'] + linedict['blockstarts'][1]
 
-    linedict['left'] = left
+    # -1 because it is 0 based
+    linedict['left'] = left - 1
     linedict['right'] = right
     return(linedict)
     
