@@ -62,4 +62,10 @@ gtf2fasta
 converts a gtf file to a file of fasta sequences of the transcripts.
 it is required that the attribute list contains a transcript_id.
 
+combineJuncs
+============
+combines identical junctions, adding their score together. Workflow to
+use this is to convert the Tophat BED files to juncs with tophatBedToJuncs
+and then combine the .juncs files with combineJuncs.
+
 .. _BEDTools: http://code.google.com/p/bedtools/
