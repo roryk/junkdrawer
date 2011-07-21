@@ -9,6 +9,7 @@ import subprocess
 import os
 import sys
 
+
 def lookupSequences(files):
     gtf_file = open(files['gtf_file'])
     records = []
@@ -31,7 +32,7 @@ def lookupSequences(files):
                 
             records.append(SeqRecord(seq, id=id))
     SeqIO.write(records, sys.stdout, "fasta")
-            
+
 def lookup_sequence(files, feature, chrom):
     """
     use samtools to look up the sequence
@@ -49,6 +50,7 @@ def lookup_sequence(files, feature, chrom):
     seq = Seq(seq, generic_dna)
 
     return seq
+
 
 def which(program):
     
