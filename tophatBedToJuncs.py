@@ -14,7 +14,7 @@ def formatJuncs(linedict):
     score = str(linedict['score'])
 
     id = ":".join([chrom, left, right, strand])
-    outline = "\t".join([chrom, left, right, strand, id, score])
+    outline = "\t".join([chrom, left, right, id, score, strand])
     outline = outline + "\n"
     return outline
 
