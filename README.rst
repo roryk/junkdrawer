@@ -68,4 +68,11 @@ combines identical junctions, adding their score together. Workflow to
 use this is to convert the Tophat BED files to juncs with tophatBedToJuncs
 and then combine the .juncs files with combineJuncs.
 
+juncs2seq
+=========
+converts a juncs file to a file of sequences for the junctions. Usage
+is juncs2seq pathtofastafile basestokeep< juncsfile. Bases to keep
+is the bases to keep on each side of the splice junction. Requires
+samtools to be installed and in your path.
+
 .. _BEDTools: http://code.google.com/p/bedtools/

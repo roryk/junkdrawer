@@ -1,0 +1,12 @@
+#!/bin/bash
+
+if [ $# -lt 2 ]; then
+    echo "usage: juncs2seq fastafile basestokeep"
+    exit 1
+fi
+
+while read -ra array; do
+    lquery=${array[0]}:$((${array[1]}-$2))-${array[1]}
+    rquery=${array[0]}:${array[2]}-$((${array[2]}+$2))
+    echo -e ">${array[3]}\n$(samtools faidx $1 $lquery | sed 1d | tr -d "\n")$(samtools faidx $1 $rquery | sed 1d | tr -d "\n")"
+done
