@@ -73,6 +73,8 @@ juncs2seq
 converts a juncs file to a file of sequences for the junctions. Usage
 is juncs2seq pathtofastafile basestokeep< juncsfile. Bases to keep
 is the bases to keep on each side of the splice junction. Requires
-samtools to be installed and in your path.
+samtools to be installed and in your path. Skips junctions that go
+through repeat regions (regions with lowercase letters in the genome 
+file).
 
 .. _BEDTools: http://code.google.com/p/bedtools/
