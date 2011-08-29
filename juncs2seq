@@ -4,8 +4,13 @@ if [ $# -lt 2 ]; then
     echo "usage: juncs2seq fastafile basestokeep"
     exit 1
 fi
-
+i=0
 while read -ra array; do
+    # skip the first line as it is a header line
+    #if [ $i -eq 0 ]; then
+	#i=$i+1
+	#continue
+    #fi
     lquery=${array[0]}:$((${array[1]}-$2))-${array[1]}
     rquery=${array[0]}:${array[2]}-$((${array[2]}+$2))
     lseq=$(samtools faidx $1 $lquery | sed 1d | tr -d "\n")
