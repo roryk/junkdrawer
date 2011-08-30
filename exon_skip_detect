@@ -1,0 +1,131 @@
+#!/usr/local/bin/python
+
+import fileinput
+from collections import namedtuple
+import logging
+
+IEEvent = namedtuple("IEEvent", ["exc", "inc1", "inc2"])
+                                
+def read_juncs():
+    """
+    reads in a .juncs file named juncsfile
+    stores the junction identifier and their scores
+    returns a dictionary of junctions and their scores
+    """
+    j_dict = {}
+    for line in fileinput.input():
+        # reserve # and > as metainformation identifiers        
+        if (line[0] == ">" or line[0] == "#"):
+            continue
+        # also skip any lines with track name as that is a header line for
+        # visualizers
+        if (line.count("track name") > 0):
+            continue        
+        line = line.strip().split("\t")
+        j_dict[line[3]] = line[4]
+
+    return j_dict
+
+def make_site_dicts(jdict):
+    """
+    takes a juncs dict and turns it into a start site dict and an end site
+    dict.
+    groups all junc_ids with the same start site into sdict, keyed by
+    the start site id and the same for the end sites in edict.
+    will throw out any start or end sites that have more than max_hits
+    """
+    sdict = {}
+    edict = {}
+    for junc in jdict.keys():
+        start = _make_start_key(junc)
+        end = _make_end_key(junc)
+        if sdict.has_key(start):
+            sdict[start].append(junc)
+        else:
+            sdict[start] = [junc]
+        if edict.has_key(end):
+            edict[end].append(junc)
+        else:
+            edict[end] = [junc]
+
+    return(sdict, edict)
+
+def _make_start_key(junc):
+    jfields = junc.split(":")
+    return ":".join([jfields[0], jfields[1], jfields[3]])
+        
+def _make_end_key(junc):
+    jfields = junc.split(":")
+    return ":".join([jfields[0], jfields[2], jfields[3]])
+
+def _get_end(junc):
+    jfields = junc.split(":")
+    return jfields[2]
+
+def _get_start(junc):
+    jfields = junc.split(":")
+    return jfields[1]
+
+def find_ie_events(sdict, edict):
+    """
+    finds all of the single inclusion/exclusion events.
+    these are events which skip a single exon
+    """
+    ie_events = []
+    starts_kept = 0
+    ends_kept = 0
+    for start, sjuncs in sdict.items():
+        # if there are not exactly two junctions mapping to this
+        # start site inc/exc events are undefined
+        if len(sjuncs) != 2:
+            continue
+        starts_kept = starts_kept + 1
+        # set the exclusion event to be the junction with the furthest
+        # end coordinate
+        if _get_end(sjuncs[0]) > _get_end(sjuncs[1]):
+            exc = sjuncs[0]
+            inc1 = sjuncs[1]
+        else:
+            exc = sjuncs[1]
+            inc1 = sjuncs[0]
+
+        # find which other junctions also map to the end of the exclusion
+        # event
+        ends = edict[_make_end_key(exc)]
+        # if there are not exactly two, skip this whole thing since it still
+        # is undefined
+        if len(ends) != 2:
+            continue
+        ends_kept = ends_kept + 1
+        if _get_start(ends[0]) < _get_start(ends[1]):
+            inc2 = ends[1]
+        else:
+            inc2 = ends[0]
+        ie_events.append(IEEvent(exc=exc, inc1=inc1, inc2=inc2))
+        
+    logging.info("Kept %d starts and %d ends", starts_kept, ends_kept)
+
+    return ie_events
+
+def main():
+    logging.basicConfig(format='%(levelname)s: %(asctime)s %(message)s',
+                                                level=logging.INFO)
+    # this isnt as efficient as it could be, since it does multiple
+    # passes of the junctions and it could just do this part all at once
+    logging.info("Reading in junctions.")
+    jdict = read_juncs()
+    logging.info("Read in %d junctions." %(len(jdict)))
+    logging.info("Creating site dictionaries.")
+    sdict, edict = make_site_dicts(jdict)
+    logging.info("Identified %d start sites." %(len(sdict)))
+    logging.info("Identified %d end sites." %(len(edict)))
+    ie_events = find_ie_events(sdict, edict)
+    logging.info("Identified %d inclusion/exclusion events." %(len(ie_events)))
+
+    # output csv to stdout
+    print "# exc, inc1, inc2"
+    for event in ie_events:
+        print ",".join(event)
+
+if __name__ == "__main__":
+    main()

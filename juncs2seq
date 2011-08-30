@@ -7,18 +7,19 @@ fi
 i=0
 while read -ra array; do
     # skip the first line as it is a header line
-    #if [ $i -eq 0 ]; then
-	#i=$i+1
-	#continue
-    #fi
+    if [ $i -eq 0 ]; then
+	i=$(($i+1))
+	continue
+    fi
     lquery=${array[0]}:$((${array[1]}-$2))-${array[1]}
     rquery=${array[0]}:${array[2]}-$((${array[2]}+$2))
     lseq=$(samtools faidx $1 $lquery | sed 1d | tr -d "\n")
     rseq=$(samtools faidx $1 $rquery | sed 1d | tr -d "\n")
     seq=${lseq}${rseq}
-    check=$(echo $seq | sed -n /[[:lower:]]/p)
+    #check=$(echo $seq | sed -n /[[:lower:]]/p)
     # don't save sequences that go through a repeat region
-    if [ "$check" == '' ]; then
-	echo -e ">${array[3]}\n${seq}"
-    fi
+    #if [ "$check" == '' ]; then
+    #echo -e ">${array[3]}\n${seq}"
+    #fi
+    echo -e ">${array[3]}\n${seq}"
 done
