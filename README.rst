@@ -77,4 +77,11 @@ samtools to be installed and in your path. Skips junctions that go
 through repeat regions (regions with lowercase letters in the genome 
 file).
 
+gtf2juncs
+=========
+converts a GTF file to a juncs file, outputting all possible
+single exon skipping events in and all splice junctions in 
+juncs format.
+
+
 .. _BEDTools: http://code.google.com/p/bedtools/

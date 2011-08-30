@@ -1,0 +1,56 @@
+#!/usr/local/bin/python
+"""
+Takes a GTF file of transcripts with exon features and outputs a
+list of all splice junctions plus all possible exon skipping events.
+The file must not have non-exon features in it or else this will create
+some false junctions.
+This does not filter for canonical splice junctions, since it is
+sequence-unaware.
+"""
+
+from gtfUtils import parseGTFlineToDict, aggregateFeaturesByTranscript
+import fileinput
+import logging
+import sys
+
+logging.basicConfig(level=logging.INFO)
+
+def _read_gtf():
+    logging.info("Processing GTF input.")
+    gtflines = []
+    numlines = 0
+    for line in fileinput.input():
+        numlines = numlines + 1
+        gtflines.append(parseGTFlineToDict(line))
+    logging.info("Read %d lines." %(numlines))
+
+    return gtflines
+
+def _make_junction(exon1, exon2):
+    """
+    makes a junction of the form junc
+    example: chr1:5:200:+
+    """
+    return ":".join([exon1['seqname'], exon1['end'], exon2['start'], exon1['strand']])
+
+def main():
+    gtflines = _read_gtf()
+    transcripts = aggregateFeaturesByTranscript(gtflines)
+
+    numjuncs = 0
+    for transcript, exons in transcripts.items():
+        last_skip = len(exons) - 2
+        last_pair = len(exons) - 1
+        
+        for i in range(0, last_skip):
+            sys.stdout.write(_make_junction(exons[i], exons[i + 1]) + "\n")
+            sys.stdout.write(_make_junction(exons[i], exons[i + 2]) + "\n")
+            numjuncs = numjuncs + 2
+            
+        numjuncs = numjuncs + 1
+        sys.stdout.write(_make_junction(exons[i], exons[i + 1])+ "\n")
+
+    logging.info("Output %d junctions." %(numjuncs))
+    
+if __name__ == "__main__":
+    main()
