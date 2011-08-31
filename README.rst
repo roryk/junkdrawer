@@ -8,29 +8,14 @@ you have a GTF file for the annotation:
 
 1) python tophatBedToJuncs.py -f junctions.bed
 2) gtf2juncs < your_annotation.gtf > annotated.juncs
-3) cat junctions.juncs | cut -f4 | sort | comm -23 - annotated.juncs > 
-novel_junctions.txt
+3) cat junctions.juncs | cut -f4 | sort | comm -23 - annotated.juncs > novel_junctions.txt
 
 To find all splice junctions that map to an EST database that you
 made with bowtie, allowing for repeat regions.
 
-1) juncs2seq rn4.fa 25 1 < junctions.juncs > junctions.fa
+1) juncs2seq rn4.fa 25 0 < junctions.juncs > junctions.fa
 2) bowtie -v 2 rat_ests junctions.fa | cut -f1 > hit_ests.txt
 
-
-tophatBedToJuncs
-================
-Takes a Tophat junctions.bed file and converts it to the raw .juncs 
-format, adding a junction-location unique junction ID. This makes for
-easy comparison of junctions across different junction files using
-standard command line utilities.
-
-tophatBedToSeq
-======================
-Takes a Tophat junctions.bed file and converts it to a FASTA file of
-sequences specifying the junctions. Takes a parameter to determine
-the size of the sequences to return. It is required that fastaFromBed
-from the BEDTools_ package is installed and in your path.
 
 filterCuffCompare
 =================
@@ -102,6 +87,10 @@ gtf2juncs
 converts a GTF file to a juncs file, outputting all possible
 single exon skipping events in and all splice junctions in 
 juncs format.
+
+tbed2juncs
+==========
+convert tophat bed file to a juncs file
 
 
 .. _BEDTools: http://code.google.com/p/bedtools/
