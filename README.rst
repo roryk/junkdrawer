@@ -1,3 +1,23 @@
+Example workflows
+=================
+The experiment: you have a single lane of data, and have gone through
+the Tophat process.
+
+To find all splice junctions that are novel to an annotation, assuming
+you have a GTF file for the annotation:
+
+1) python tophatBedToJuncs.py -f junctions.bed
+2) gtf2juncs < your_annotation.gtf > annotated.juncs
+3) cat junctions.juncs | cut -f4 | sort | comm -23 - annotated.juncs > 
+novel_junctions.txt
+
+To find all splice junctions that map to an EST database that you
+made with bowtie, allowing for repeat regions.
+
+1) juncs2seq rn4.fa 25 1 < junctions.juncs > junctions.fa
+2) bowtie -v 2 rat_ests junctions.fa | cut -f1 > hit_ests.txt
+
+
 tophatBedToJuncs
 ================
 Takes a Tophat junctions.bed file and converts it to the raw .juncs 

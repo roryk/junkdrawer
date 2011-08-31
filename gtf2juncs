@@ -1,11 +1,12 @@
 #!/usr/local/bin/python
 """
 Takes a GTF file of transcripts with exon features and outputs a
-list of all splice junctions plus all possible exon skipping events.
+list of all splice junctions.
 The file must not have non-exon features in it or else this will create
 some false junctions.
 This does not filter for canonical splice junctions, since it is
 sequence-unaware.
+It also throws out all transcripts with less than 3 exons.
 """
 
 from gtfUtils import parseGTFlineToDict, aggregateFeaturesByTranscript
@@ -39,12 +40,15 @@ def main():
 
     numjuncs = 0
     for transcript, exons in transcripts.items():
+        if len(exons) < 3:
+            continue
+        
         last_skip = len(exons) - 2
         last_pair = len(exons) - 1
         
         for i in range(0, last_skip):
             sys.stdout.write(_make_junction(exons[i], exons[i + 1]) + "\n")
-            sys.stdout.write(_make_junction(exons[i], exons[i + 2]) + "\n")
+            #sys.stdout.write(_make_junction(exons[i], exons[i + 2]) + "\n")
             numjuncs = numjuncs + 2
             
         numjuncs = numjuncs + 1

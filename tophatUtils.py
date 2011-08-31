@@ -25,7 +25,7 @@ def calculateJunctionEnds(linedict):
     right = linedict['chromStart'] + linedict['blockstarts'][1]
 
     # -1 because it is 0 based
-    linedict['left'] = left - 1
-    linedict['right'] = right
+    linedict['left'] = left
+    linedict['right'] = right + 1
     return(linedict)
     
