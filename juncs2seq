@@ -17,8 +17,11 @@ while read -ra array; do
 	i=$(($i+1))
 	continue
     fi
-    lquery=${array[0]}:$((${array[1]}-$2))-${array[1]}
-    rquery=${array[0]}:${array[2]}-$((${array[2]}+$2))
+    # switch to 1 based system for the lookups
+    left=$((${array[1]} + 1))
+    right=$((${array[2]} + 1))
+    lquery=${array[0]}:$(($left-$2))-$left
+    rquery=${array[0]}:$right-$(($right+$2))
     lseq=$(samtools faidx $1 $lquery | sed 1d | tr -d "\n")
     rseq=$(samtools faidx $1 $rquery | sed 1d | tr -d "\n")
     seq=${lseq}${rseq}
