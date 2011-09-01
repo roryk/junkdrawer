@@ -6,11 +6,11 @@ The file must not have non-exon features in it or else this will create
 some false junctions.
 This does not filter for canonical splice junctions, since it is
 sequence-unaware.
+This also reports all single exon skipping events.
 It also throws out all transcripts with less than 3 exons.
 """
 
 from gtfUtils import parseGTFlineToDict, aggregateFeaturesByTranscript
-import fileinput
 import logging
 import sys
 
@@ -20,7 +20,7 @@ def _read_gtf():
     logging.info("Processing GTF input.")
     gtflines = []
     numlines = 0
-    for line in fileinput.input():
+    for line in sys.stdin:
         numlines = numlines + 1
         gtflines.append(parseGTFlineToDict(line))
     logging.info("Read %d lines." %(numlines))
@@ -34,27 +34,112 @@ def _make_junction(exon1, exon2):
     """
     return ":".join([exon1['seqname'], exon1['end'], exon2['start'], exon1['strand']])
 
-def main():
-    gtflines = _read_gtf()
-    transcripts = aggregateFeaturesByTranscript(gtflines)
-
+def _normal_mode(transcripts):
     numjuncs = 0
     for transcript, exons in transcripts.items():
+        last_pair = len(exons) - 1
+        for i in range(0, last_pair):
+            sys.stdout.write(_make_junction(exons[i], exons[i + 1]) + "\n")
+            numjuncs = numjuncs + 1
+
+    logging.info("Wrote %d junctions specified from the GTF." %(numjuncs))
+
+def _single_skip_mode(transcripts):
+    numjuncs = 0
+    numskips = 0
+    for transcript, exons in transcripts.items():
+        last_pair = len(exons) - 1
+        for i in range(0, last_pair):
+            sys.stdout.write(_make_junction(exons[i], exons[i + 1]) + "\n")
+            numjuncs = numjuncs + 1
+            if (i + 2) < len(exons):
+                sys.stdout.write(_make_junction(exons[i], exons[i + 2]) + "\n")
+                numskips = numskips + 1
+
+    logging.info("Wrote %d junctions specified from the GTF." %(numjuncs))
+    logging.info("Wrote %d single exon skipping events." %(numskips))
+
+def _skip_mode(transcripts):
+    numjuncs = 0
+    numskips = 0
+    for transcript, exons in transcripts.items():
+        last_pair = len(exons) - 1
+        for i in range(0, last_pair):
+            sys.stdout.write(_make_junction(exons[i], exons[i + 1]) + "\n")
+            numjuncs = numjuncs + 1
+            for j in range(i + 2, len(exons)):
+                sys.stdout.write(_make_junction(exons[i], exons[j]) + "\n")
+                numskips = numskips + 1
+
+    logging.info("Wrote %d junctions specified from the GTF." %(numjuncs))
+    logging.info("Wrote %d single exon skipping events." %(numskips))
+
+                
+def _ie_mode(transcripts):
+        
+    for transcript, exons in transcripts.items():
+        # skip if the number of exons is less than 3, since this is meaningless then
         if len(exons) < 3:
             continue
         
         last_skip = len(exons) - 2
-        last_pair = len(exons) - 1
+        sys.stdout.write(">%s\n" %(transcript))
         
-        for i in range(0, last_skip):
-            sys.stdout.write(_make_junction(exons[i], exons[i + 1]) + "\n")
-            #sys.stdout.write(_make_junction(exons[i], exons[i + 2]) + "\n")
-            numjuncs = numjuncs + 2
-            
-        numjuncs = numjuncs + 1
-        sys.stdout.write(_make_junction(exons[i], exons[i + 1])+ "\n")
+        for i in range(1, last_skip):
+            """
+            calculate inclusion junctions for exon i (junctions that
+            connect to i)
+            """
+            sys.stdout.write(">inc:%s\n" %(exons[i]['exon_number']))
+            inc = []
+            for j in range(0, len(exons)):
+                if j < i:
+                    inc.append(_make_junction(exons[j], exons[i]))
+                if i < j:
+                    inc.append(_make_junction(exons[i], exons[j]))
+            sys.stdout.write(",".join(inc) + "\n")
 
-    logging.info("Output %d junctions." %(numjuncs))
-    
+            """
+            calculate exclusion junctions for exon i (junctions that
+            skip over exon i
+            """
+            sys.stdout.write(">exc:%s\n" %(exons[i]['exon_number']))
+            exc = []
+            for j in range(0, i):
+                for k in range(i + 1, len(exons)):
+                    exc.append(_make_junction(exons[j], exons[k]))
+
+            sys.stdout.write(",".join(inc) + "\n")
+
+def main():
+
+    description = "Outputs all the splice junctions specified by a GTF file."
+    usage = "gtflines [--skip]:\n\n\t" \
+            "options:\n\t" \
+            "--skip: enumerate all possible single exon skipping events for " \
+            "each transcript\n\t" \
+            "--ie: format as inclusion/exclusion events\n\t" \
+            "--help: display help"
+
+    if sys.argv.count("-h") or sys.argv.count("--help"):
+        print description
+        print usage
+        exit(1)
+
+    gtflines = _read_gtf()
+    transcripts = aggregateFeaturesByTranscript(gtflines)
+
+    if sys.argv.count("--skip"):
+        logging.info("Will calculate all single exon skipping events.")
+        _skip_mode(transcripts)
+        exit(1)
+
+    if sys.argv.count("--ie"):
+        logging.info("Writing out inclusion/exclusion events file.")
+        _ie_mode(transcripts)
+        exit(1)
+
+    _normal_mode(transcripts)
+
 if __name__ == "__main__":
     main()
