@@ -1,38 +1,170 @@
-#!/bin/bash
+#!/usr/local/bin/python
 
-if [ $# -lt 3 ]; then
-    echo "usage: juncs2seq fastafile bases repeatmask"
-    echo "bases: bases to keep on each side of splice junction"
-    echo "repeatmask: 0 to keep repeats, 1 to ignore junctions with any repeats in them"
-    echo "example: juncs2seq rn4.fa 25 1"
-    echo "This will take a juncs file from stdin, look up the sequences in rn4.fa, and
-output 50 bases which span the junction, as long as a repeat is not found,"
+import sys
+import logging
+import os
+import subprocess
+import string
 
-    exit 1
-fi
-i=0
-while read -ra array; do
-    # skip the first line as it is a header line
-    if [ $i -eq 0 ]; then
-	i=$(($i+1))
-	continue
-    fi
-    # switch to 1 based system for the lookups
-    left=$((${array[1]} + 1))
-    right=$((${array[2]} + 1))
-    lquery=${array[0]}:$(($left-$2))-$left
-    rquery=${array[0]}:$right-$(($right+$2))
-    lseq=$(samtools faidx $1 $lquery | sed 1d | tr -d "\n")
-    rseq=$(samtools faidx $1 $rquery | sed 1d | tr -d "\n")
-    seq=${lseq}${rseq}
-    # skip repeats
-    if [ $3 -eq 1 ]; then
-	check=$(echo $seq | sed -n /[[:lower:]]/p)
-	if [ "$check" == '' ]; then
-	    echo -e ">${array[3]}\n${seq}"
-	fi
-    else
-	echo -e ">${array[3]}\n${seq}"
-    fi
+logging.basicConfig(level=logging.INFO)
 
-done
+JUNC_HEADER = ["seqname", "left", "right", "id", "score", "strand"]
+
+def which(program):
+    
+    def is_exe(fpath):
+        return os.path.exists(fpath) and os.access(fpath, os.X_OK)
+
+    fpath, fname = os.path.split(program)
+    if fpath:
+        if is_exe(program):
+            return program
+    else:
+        for path in os.environ["PATH"].split(os.pathsep):
+            exe_file = os.path.join(path, program)
+            if is_exe(exe_file):
+                return exe_file
+                
+    return None
+
+def _parse_junc(line):
+    return dict(zip(JUNC_HEADER, line.split("\t")))
+
+def _calculate_ends(junction, keep, ignore):
+    if keep >= 0:
+        left_start = int(junction['left']) - keep + 1
+        left_end = int(junction['left']) + 1
+        right_start = int(junction['right']) + 1
+        right_end = int(junction['right']) + keep + 1
+
+        if ignore:
+            left_end = left_end - 1
+            right_start = right_start + 1
+        
+    if keep < 0:
+        left_start = int(junction['left']) + 1
+        left_end = int(junction['left']) - keep + 1
+        right_start = int(junction['right']) + keep + 1
+        right_end = int(junction['right']) + 1
+        
+        if ignore:
+            left_start = left_start + 1
+            right_end = right_end - 1
+
+    left = str(left_start) + "-" + str(left_end)
+    right = str(right_start) + "-" + str(right_end)
+
+    return (left, right)
+
+def _build_query(junction, location):
+    query = junction['seqname'] + ":" + location
+    return query
+
+def _reverse_complement(seq):
+    table = string.maketrans("ACGT", "TGCA")
+    seq = seq.translate(table)[::-1]
+    return seq
+
+def _lookup_junctions(files, queries):
+    """
+    looks up both sides of nseqs number of junctions and concatenates
+    them together
+    """
+    args = [files['samtools'], "faidx", files['seq_file']] + queries
+    child = subprocess.check_output(args).split("\n")
+    
+    seqs = []
+    seq = ""
+    begin = True
+    # combine every other sequence together since the queries are in
+    # pairs for junctions
+    for line in child:
+        if line == "":
+            continue
+        if line.strip()[0] == ">":
+            continue
+        if begin:
+            seq = line.strip()
+            begin = False
+        else:
+            seq = seq + line.strip()
+            seqs.append(seq)
+            begin = True
+
+    return seqs
+
+def read_juncs():
+    juncs = []
+    njuncs = 0
+    for line in sys.stdin:
+        njuncs = njuncs + 1
+        juncs.append(_parse_junc(line))
+
+    logging.info("Read %d junctions." %(njuncs))
+    
+    return juncs
+
+def main():
+    
+    description = "Converts a set of junction to sequences."
+    usage = "juncs2seq genome N\n\t" \
+            "genome: genome file to use (fasta format and indexed)\n\t" \
+            "N: keep N nucleotides on each side of the junction. " \
+            "This can be a negative number which will get a piece of the intervening intron.\n\t" \
+            "--i: ignore the actual junction nucleotide\n\t" \
+            "--rt: reverse complement sequences on the minus strand."
+    
+    if len(sys.argv) < 3:
+        print description
+        print usage
+        exit(1)
+
+    CHUNK_SIZE = 1000
+    files = {'seq_file': sys.argv[1], 'samtools': which('samtools')}
+    keep = int(sys.argv[2])
+
+    ignore = False
+    if sys.argv.count("--i"):
+        ignore = True
+
+    rt = False
+    if sys.argv.count("--rt"):
+        rt = True
+
+    juncs = read_juncs()
+    queries = []
+    names = []
+    seqs = []
+    written = 0
+    for junc in juncs:
+        names.append(junc['id'])
+        loc = _calculate_ends(junc, keep, ignore)
+        queries.append(_build_query(junc, loc[0]))
+        queries.append(_build_query(junc, loc[1]))
+        if len(queries) > CHUNK_SIZE:
+            seqs = seqs + _lookup_junctions(files, queries)
+            outputs = zip(names, seqs)
+            for output in outputs:
+                sys.stdout.write(">" + output[0] + "\n")
+                if rt and (output[0].strip()[-1] == "-"):
+                    sys.stdout.write(_reverse_complement(output[1]) + "\n")
+                    written = written + 1
+                else:
+                    sys.stdout.write(output[1] + "\n")
+                    written = written + 1
+            queries = []
+            seqs = []
+            names = []
+                
+    seqs = seqs + _lookup_junctions(files, queries)
+    
+    outputs = zip(names, seqs)
+    for output in outputs:
+            sys.stdout.write(output[0] + "\n")
+            sys.stdout.write(output[1] + "\n")
+            written = written + 1
+        
+    logging.info("Wrote %d junctions." %(written))
+
+if __name__ == "__main__":
+    main()
