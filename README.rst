@@ -6,16 +6,22 @@ the Tophat process.
 To find all splice junctions that are novel to an annotation, assuming
 you have a GTF file for the annotation:
 
-1) python tophatBedToJuncs.py -f junctions.bed
+1) tbed2juncs < junctions.bed > junctions.juncs
 2) gtf2juncs < your_annotation.gtf > annotated.juncs
-3) cat junctions.juncs | cut -f4 | sort | comm -23 - annotated.juncs > novel_junctions.txt
+3) cat junctions.juncs | cut -f4 | sort | comm -23 - annotated.juncs > 
+novel_junctions.txt
 
 To find all splice junctions that map to an EST database that you
 made with bowtie, allowing for repeat regions.
-
 1) juncs2seq rn4.fa 25 0 < junctions.juncs > junctions.fa
 2) bowtie -v 2 rat_ests junctions.fa | cut -f1 > hit_ests.txt
 
+To enumerate all splice junctions from a GTF file including all
+possible exon skipping events with the canonical splicing signals 
+GC-AG, AT-AC, GC-AG :
+1) gtf2juncs --skip < annotation.gtf | uniq | sort | uniq > juncs.juncs
+2) juncs2seq genome.fa -2 --i --rt < juncs.juncs > juncs.fa
+3) egrep -i -B 1 -e "GTAG|ATAC|GCAG" juncs.fa | grep -ve '--' > canonical.fa
 
 filterCuffCompare
 =================
