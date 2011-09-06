@@ -11,6 +11,7 @@ It also throws out all transcripts with less than 3 exons.
 """
 
 from gtfUtils import parseGTFlineToDict, aggregateFeaturesByTranscript
+from gtfUtils import aggregateFeaturesByGene, mergeOverlappedExons
 import logging
 import sys
 
@@ -98,7 +99,7 @@ def _ie_mode(transcripts):
         # meaningless if that is true
         if len(exons) < 3:
             continue
-        
+
         last_skip = len(exons) - 2
         sys.stdout.write(">%s\n" %(transcript))
         
@@ -126,7 +127,7 @@ def _ie_mode(transcripts):
                 for k in range(i + 1, len(exons)):
                     exc.append(_make_junction(exons[j], exons[k]))
 
-            sys.stdout.write(",".join(inc) + "\n")
+            sys.stdout.write(",".join(exc) + "\n")
 
 def main():
 
@@ -144,18 +145,24 @@ def main():
         exit(1)
 
     gtflines = _read_gtf()
-    transcripts = aggregateFeaturesByTranscript(gtflines)
 
+    
     if sys.argv.count("--skip"):
+        #transcripts = aggregateFeaturesByTranscript(gtflines)
+        genes = aggregateFeaturesByGene(gtflines)
+        genes = mergeOverlappedExons(genes)
         logging.info("Will calculate all exon skipping events.")
-        _skip_mode(transcripts)
+        _skip_mode(genes)
         exit(1)
 
     if sys.argv.count("--ie"):
+        genes = aggregateFeaturesByGene(gtflines)
+        genes = mergeOverlappedExons(genes)
         logging.info("Writing out inclusion/exclusion events file.")
-        _ie_mode(transcripts)
+        _ie_mode(genes)
         exit(1)
 
+    transcripts = aggregateFeaturesByTranscript(gtflines)
     _normal_mode(transcripts)
 
 if __name__ == "__main__":
