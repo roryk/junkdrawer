@@ -23,6 +23,9 @@ GC-AG, AT-AC, GC-AG :
 2) juncs2seq genome.fa -2 --i --rt < juncs.juncs > juncs.fa
 3) egrep -i -B 1 -e "GTAG|ATAC|GCAG" juncs.fa | grep -ve '--' > canonical.fa
 
+To enumerate all possible inclusion/exclusion events for an GTF file:
+1) gtf2juncs --ie < annotation.gtf > annotation.ie
+
 filterCuffCompare
 =================
 
