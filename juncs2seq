@@ -104,6 +104,26 @@ def read_juncs():
     
     return juncs
 
+def read_juncs_nice(CHUNK_SIZE):
+    juncs = []
+    i = 0
+    for line in sys.stdin:
+        i = i + 1
+        if i > CHUNK_SIZE:
+            juncs.append(_parse_junc(line))
+            return juncs
+        juncs.append(_parse_junc(line))
+        
+    return juncs
+
+def _build_output_lines(out1, out2, rt):
+    name = ">" + out1 + "\n"
+    if rt and (out1.strip()[-1] == "-"):
+        seq = _reverse_complement(out2) + "\n"
+    else:
+        seq = out2 + "\n"
+    return name + seq
+
 def main():
     
     description = "Converts a set of junction to sequences."
@@ -131,40 +151,35 @@ def main():
     if sys.argv.count("--rt"):
         rt = True
 
-    juncs = read_juncs()
     queries = []
     names = []
     seqs = []
     written = 0
-    for junc in juncs:
-        names.append(junc['id'])
-        loc = _calculate_ends(junc, keep, ignore)
-        queries.append(_build_query(junc, loc[0]))
-        queries.append(_build_query(junc, loc[1]))
-        if len(queries) > CHUNK_SIZE:
-            seqs = seqs + _lookup_junctions(files, queries)
-            outputs = zip(names, seqs)
-            for output in outputs:
-                sys.stdout.write(">" + output[0] + "\n")
-                if rt and (output[0].strip()[-1] == "-"):
-                    sys.stdout.write(_reverse_complement(output[1]) + "\n")
-                    written = written + 1
-                else:
-                    sys.stdout.write(output[1] + "\n")
-                    written = written + 1
-            queries = []
-            seqs = []
-            names = []
-                
-    seqs = seqs + _lookup_junctions(files, queries)
-    
-    outputs = zip(names, seqs)
-    for output in outputs:
-            sys.stdout.write(output[0] + "\n")
-            sys.stdout.write(output[1] + "\n")
-            written = written + 1
+    logging.info("Processing junctions.")
+    juncs = read_juncs_nice(CHUNK_SIZE)
+
+    while juncs != []:
+        for junc in juncs:
+            names.append(junc['id'])
+            loc = _calculate_ends(junc, keep, ignore)
+            queries.append(_build_query(junc, loc[0]))
+            queries.append(_build_query(junc, loc[1]))
         
-    logging.info("Wrote %d junctions." %(written))
+        seqs = seqs + _lookup_junctions(files, queries)
+        outputs = zip(names, seqs)
+        # reset back to the initial state
+        queries = []
+        seqs = []
+        names = []
+        for output in outputs:
+            sys.stdout.write(_build_output_lines(output[0], output[1], rt))
+            written = written + 1
+        # output a progress indicator since this can take a while
+        sys.stderr.write(".")    
+        juncs = read_juncs_nice(CHUNK_SIZE)
+    sys.stderr.write("\n")
+    
+    logging.info("Wrote %d junctions total." %(written))
 
 if __name__ == "__main__":
     main()
