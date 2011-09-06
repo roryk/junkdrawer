@@ -280,6 +280,68 @@ def aggregateFeaturesByTranscript(gtflines):
     
     return transcripts
 
+def aggregateFeaturesByGene(gtflines):
+    genes = {}
+    for line in gtflines:
+        if 'gene_id' not in line:
+            continue
+        gene_id = line['gene_id']
+        if gene_id not in genes:
+            genes[gene_id] = [line]
+        else:
+            index = len(genes[gene_id]) - 1
+
+            while (genes[gene_id][index]['start'] >
+                   line['start']):
+                index = index - 1
+                if index == -1:
+                    break
+
+            genes[gene_id].insert(index + 1, line)
+
+    return genes
+
+def mergeOverlappedExons(genes):
+    for gene in genes:
+        exons = []
+        for feature in genes[gene]:
+            if feature['feature'] != "exon":
+                continue
+            if exons == []:
+                exons.append(feature)
+                continue
+            
+            for exon in reversed(exons):
+                # the new feature is the furthest along, so add it and go to
+                # the next feature
+                if (exon['end'] < feature['start']):
+                    exons.append(feature)
+                    break
+                # the old feature is contained in the new feature
+                if ((exon['start'] >= feature['start']) and
+                    exon['end'] <= feature['end']):
+                    exon['end'] = feature['end']
+                    exon['start'] = feature['start']
+                    
+                # the new feature is contained in the old feature
+                # skip it
+                if ((exon['start'] <= feature['start']) and
+                    (exon['end'] >= feature['end'])):
+                    break
+                # the new feature overlaps with the old feature
+                # merge them together
+                if ((exon['start'] <= feature['start']) and
+                    (exon['end'] <= feature['end'])):
+                    exon['end'] = feature['end']
+                    break
+                if ((exon['end'] >= feature['end']) and
+                    (exon['start'] >= feature['start'])):
+                    exon['start'] = feature['start']
+                    break
+        genes[gene] = exons
+
+    return genes
+
 def addFeatureCoordinatesToTranscripts(transcripts):
 
     for trans_id in transcripts:
