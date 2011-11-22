@@ -2,6 +2,8 @@
 import argparse
 import sys
 import logging
+from juncs2seq import which
+import subprocess
 
 logging.basicConfig(level=logging.INFO)
 
@@ -14,13 +16,27 @@ SEQNAMES = ['chr1', 'chr10', 'chr11', 'chr12', 'chr13', 'chr14', 'chr15', 'chr16
 def tsv2Dict(header, line):
     return dict(zip(header, line.split("\t")))
 
+def countExonReads(exon, bamfile, samtools):
+    # XXX not complete yet, in testing phase
+    args = [samtools, "view", bamfile.name, exon]
+    child = subprocess.Popen(args, stdout=subprocess.PIPE)
+    reads = 0
+    for line in child.stdout:
+        reads = reads + 1
+
+    return reads
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('ie_file', nargs='?', type=argparse.FileType('r'),
                         help="a inclusion/exclusion file.")
     parser.add_argument('j1_file', nargs='?', type=argparse.FileType('r'),
                         help="a file in juncs format")
+    parser.add_argument('bamfile', nargs='?', type=argparse.FileType('r'),
+                       help="a file in bam format")
     args = parser.parse_args()
+
+    samtools = which("samtools")
 
     for seq in SEQNAMES:
 
@@ -49,6 +65,8 @@ def main():
                 out_count = out_count + 1
                 event.count_inclusion(juncs)
                 event.count_exclusion(juncs)
+                # add all of the reads that map to the exon
+                event.inc_counts = event.inc_counts + countExonReads(event.exon_id, args.bamfile, samtools)
                 event.output_counts()
         logging.info("Output %d event counts." %(out_count))
 

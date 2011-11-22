@@ -58,6 +58,16 @@ def _normal_mode(transcripts):
 
     logging.info("Wrote %d junctions specified from the GTF." %(numjuncs))
 
+def _tophat_mode(transcripts):
+    numjuncs = 0
+    for transcript, exons in transcripts.items():
+        last_pair = len(exons) - 1
+        for i in range(0, last_pair):
+            sys.stdout.write(_make_junction_line(exons[i], exons[i + 1]) + "\n")
+            numjuncs = numjuncs + 1
+
+    logging.info("Wrote %d junctions specified form the GTF." %(numjuncs))
+
 def _single_skip_mode(transcripts):
     """
     currently not used, calculates just the single skips
@@ -134,8 +144,9 @@ def _ie_mode(transcripts):
 def main():
 
     description = "Outputs all the splice junctions specified by a GTF file."
-    usage = "gtflines [--skip]:\n\n\t" \
+    usage = "gtf2juncs [--skip]:\n\n\t" \
             "options:\n\t" \
+            "--tophat: output these in the tophat raw juncs format\n " \
             "--skip: enumerate all possible single exon skipping events for " \
             "each transcript\n\t" \
             "--ie: format as inclusion/exclusion events\n\t" \
@@ -165,6 +176,11 @@ def main():
         exit(1)
 
     transcripts = aggregateFeaturesByTranscript(gtflines)
+
+    if sys.argv.count("--tophat"):
+        _tophat_mode(transcripts)
+        exit(1)
+        
     _normal_mode(transcripts)
 
 if __name__ == "__main__":
