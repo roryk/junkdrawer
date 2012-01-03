@@ -48,6 +48,11 @@ def _make_junction_line(exon1, exon2):
     return "\t".join([exon1['seqname'], end_of_one, start_of_two, id, ".",
                       exon1['strand']]) + "\n"    
 
+def _make_tophat_junction_line(exon1, exon2):
+    end_of_one = str(int(exon1['end']) - 1)
+    start_of_two = str(int(exon2['start']) - 1)
+    return "\t".join([exon1['seqname'], end_of_one, start_of_two, exon1['strand']]) + "\n"
+
 def _normal_mode(transcripts):
     numjuncs = 0
     for transcript, exons in transcripts.items():
@@ -63,7 +68,7 @@ def _tophat_mode(transcripts):
     for transcript, exons in transcripts.items():
         last_pair = len(exons) - 1
         for i in range(0, last_pair):
-            sys.stdout.write(_make_junction_line(exons[i], exons[i + 1]) + "\n")
+            sys.stdout.write(_make_tophat_junction_line(exons[i], exons[i + 1]) + "\n")
             numjuncs = numjuncs + 1
 
     logging.info("Wrote %d junctions specified form the GTF." %(numjuncs))
