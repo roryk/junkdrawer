@@ -103,5 +103,14 @@ tbed2juncs
 ==========
 convert tophat bed file to a juncs file
 
+grepGTF
+=======
+grep a GTF file for a field or attribute with IDs from another file.
+For example to find all entries in the file ensembl.gtf that have the gene_ids
+listed in the file tofilter.tsv:
+
+python grepGTF ensembl.gtf gene_id tofilter.tsv
+
+To find the ones that don't match add -v to th end.
 
 .. _BEDTools: http://code.google.com/p/bedtools/
