@@ -17,7 +17,6 @@ def tsv2Dict(header, line):
     return dict(zip(header, line.split("\t")))
 
 def countExonReads(exon, bamfile, samtools):
-    # XXX not complete yet, in testing phase
     args = [samtools, "view", bamfile.name, exon]
     child = subprocess.Popen(args, stdout=subprocess.PIPE)
     reads = 0
@@ -63,6 +62,8 @@ def main():
             # just to make sure
             if event.seqname == seq:
                 out_count = out_count + 1
+                if(out_count % 1000 == 0):
+                    logging.info("Processed %d events" %(out_count))
                 event.count_inclusion(juncs)
                 event.count_exclusion(juncs)
                 # add all of the reads that map to the exon
