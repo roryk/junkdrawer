@@ -113,4 +113,10 @@ python grepGTF ensembl.gtf gene_id tofilter.tsv
 
 To find the ones that don't match add -v to th end.
 
+shuffle_fasta
+=============
+Shuffles the sequences in a FASTA file, good for quick and dirty false-positive tests.
+Takes a FASTA file as stdin and returns shuffled sequences, each sequence maintaining
+the same overall nucleotide composition.
+
 .. _BEDTools: http://code.google.com/p/bedtools/
