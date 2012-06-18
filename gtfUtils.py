@@ -59,7 +59,7 @@ def calculateLengths(gtflines):
     for line in gtflines:
         if line['feature'] != "exon":
             continue
-        size = abs(int(line['end']) - int(line['start']))
+        size = abs(int(line['end']) - int(line['start'])) + 1
         if 'transcript_id' not in line:
             continue
         if line['transcript_id'] not in lengths:
