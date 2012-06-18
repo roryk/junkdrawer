@@ -12,18 +12,22 @@ def parseIELine(line):
         z = [int(y) for y in x[1:]]
         return [x[0]] + z
 
+def outputLine(line, p):
+    print "%s\t%f" %(line.strip(), p)
+
 def main():
-    header = sys.stdin.readline().split("\t")
+    #header = sys.stdin.readline().split("\t")
     for line in sys.stdin:
         x = parseIELine(line)
         z = [(y < 5) for y in x[1:]]
         if True in z:
             continue
         z = np.array([[x[1], x[2]], [x[3], x[4]]])
-        c = stats.chi2_contingency(z, correction=False)
-        if c[1] < 0.01:
-            print line
-            print c
+        chi2, p, dof, expected = stats.chi2_contingency(z, correction=False)
+        outputLine(line, p)
+        #if c[1] < 0.01:
+        #    print line
+        #    print c
 
 if __name__ == "__main__":
     main()
