@@ -8,7 +8,7 @@ you have a GTF file for the annotation:
 
 1. tbed2juncs < junctions.bed > junctions.juncs
 2. gtf2juncs < your_annotation.gtf > annotated.juncs
-3. cat junctions.juncs | cut -f4 | sort | comm -23 - annotated.juncs > 
+3. cat junctions.juncs | cut -f4 | sort | comm -23 - annotated.juncs >
 novel_junctions.txt
 
 To find all splice junctions that map to an EST database that you
@@ -17,7 +17,7 @@ made with bowtie, allowing for repeat regions.
 2. bowtie -v 2 rat_ests junctions.fa | cut -f1 > hit_ests.txt
 
 To enumerate all splice junctions from a GTF file including all
-possible exon skipping events with the canonical splicing signals 
+possible exon skipping events with the canonical splicing signals
 GC-AG, AT-AC, GC-AG :
 1. gtf2juncs --skip < annotation.gtf | uniq | sort | uniq > juncs.juncs
 2. juncs2seq genome.fa -2 --i --rt < juncs.juncs > juncs.fa
@@ -36,7 +36,7 @@ combined.gtf file from Cuffcompare and retains transcripts with a
 specified number of samples supporting evidence of the
 transcript. This also retains all transcripts that match the reference
 annotation. Useful for wiping out a lot of the junky
-partially-assembled transcripts that Cufflinks spits out. 
+partially-assembled transcripts that Cufflinks spits out.
 
 The second mode filters transcripts based on their proportion of
 exons in the longest transcript for that locus. Takes a gtf file and
@@ -59,7 +59,7 @@ transcriptLength
 Calculates the length of all transcripts in a GTF file by adding up all
 of the 'exons' features for each transcript. Also can filter a GTF file
 by minimum and maximum transcript lengths. This is useful for removing
-small transcripts that may be lost during RNA purification such as 
+small transcripts that may be lost during RNA purification such as
 microRNA and snoRNA and also to remove large transcripts that may be
 degraded.
 
@@ -90,13 +90,13 @@ converts a juncs file to a file of sequences for the junctions. Usage
 is juncs2seq pathtofastafile basestokeep< juncsfile. Bases to keep
 is the bases to keep on each side of the splice junction. Requires
 samtools to be installed and in your path. Skips junctions that go
-through repeat regions (regions with lowercase letters in the genome 
+through repeat regions (regions with lowercase letters in the genome
 file).
 
 gtf2juncs
 =========
 converts a GTF file to a juncs file, outputting all possible
-single exon skipping events in and all splice junctions in 
+single exon skipping events in and all splice junctions in
 juncs format.
 
 tbed2juncs
@@ -118,5 +118,12 @@ shuffle_fasta
 Shuffles the sequences in a FASTA file, good for quick and dirty false-positive tests.
 Takes a FASTA file as stdin and returns shuffled sequences, each sequence maintaining
 the same overall nucleotide composition.
+
+detect_fastq_format
+===================
+Outputs a list of possible formats a FASTQ file could be after checking at most
+a million reads.
+
+usage: detect_fastq_format.py fastq_file
 
 .. _BEDTools: http://code.google.com/p/bedtools/
