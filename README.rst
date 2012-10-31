@@ -124,6 +124,10 @@ detect_fastq_format
 Outputs a list of possible formats a FASTQ file could be after checking at most
 a million reads.
 
+vcf2tsv.py
+==========
+Quick and dirty conversion of a tsv to a csv file.
+
 usage: detect_fastq_format.py fastq_file
 
 .. _BEDTools: http://code.google.com/p/bedtools/
