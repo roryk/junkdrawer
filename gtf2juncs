@@ -49,9 +49,13 @@ def _make_junction_line(exon1, exon2):
                       exon1['strand']]) + "\n"    
 
 def _make_tophat_junction_line(exon1, exon2):
-    end_of_one = str(int(exon1['end']) - 1)
+    end_of_one = str(int(exon1['end']))
     start_of_two = str(int(exon2['start']) - 1)
-    return "\t".join([exon1['seqname'], end_of_one, start_of_two, exon1['strand']]) + "\n"
+    if 'exon_id' not in exon1:
+        return "\t".join([exon1['seqname'], end_of_one, start_of_two, exon1['transcript_id'], ".", exon1['strand']])
+    else:
+        junc_id = ".".join([exon1['exon_id'], exon2['exon_id']])
+        return "\t".join([exon1['seqname'], end_of_one, start_of_two, junc_id, ".", exon1['strand']])
 
 def _normal_mode(transcripts):
     numjuncs = 0
