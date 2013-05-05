@@ -131,3 +131,13 @@ Quick and dirty conversion of a tsv to a csv file.
 usage: detect_fastq_format.py fastq_file
 
 .. _BEDTools: http://code.google.com/p/bedtools/
+
+Authors
+=======
+| roryk_
+| jkgoya_
+
+.. _roryk: http://github.com/roryk
+.. _jkgoya: http://github.com/jkgoya
+
+
