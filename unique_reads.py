@@ -21,6 +21,6 @@ if __name__ == "__main__":
     parser.add_argument("--max-multi", default=1, type=int,
                         help="Maximum number of multi-hits to allow per read.")
     parser.add_argument('in_bam', help="Input BAM file name.")
-    parser.add_argumnet('out_bam', help="Output BAM file name.")
+    parser.add_argument('out_bam', help="Output BAM file name.")
     args = parser.parse_args()
     main(args.in_bam, args.out_bam, args.max_multi)
