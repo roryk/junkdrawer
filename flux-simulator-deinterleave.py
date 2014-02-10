@@ -28,18 +28,6 @@ def deinterleave(in_fastq):
             continue
         fq1_out_handle.write(fq1_record.format(quality_format))
         fq2_out_handle.write(fq2_record.format(quality_format))
-#        if len(fq1_reco# rd.seq) >= min_length and len(fq2_record.seq) >= min_length:
-    #         fq1_out_handle.write(fq1_record.format(quality_format))
-    #         fq2_out_handle.write(fq2_record.format(quality_format))
-    #     else:
-    #         if len(fq1_record.seq) > min_length:
-    #             fq1_single_handle.write(fq1_record.format(quality_format))
-    #         if len(fq2_record.seq) > min_length:
-    #             fq2_single_handle.write(fq2_record.format(quality_format))
-    # fq1_out_handle.close()
-    # fq2_out_handle.close()
-    # fq1_single_handle.close()
-    # fq2_single_handle.cl
 
     return [fq1_out, fq2_out]
 
