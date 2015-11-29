@@ -5,6 +5,7 @@ if __name__ == "__main__":
     parser = ArgumentParser()
     parser.add_argument("original")
     parser.add_argument("converted")
+    parser.add_argument("outfile")
     args = parser.parse_args()
 
     original = pd.read_csv(args.original, delimiter="\t", dtype=str)
@@ -30,4 +31,4 @@ if __name__ == "__main__":
     merged['start'] = merged['start'].astype(int)
     merged = merged.sort(["chromosome", "start"])
     merged['chromosome'] = 'chr' + merged['chromosome']
-    merged.to_csv("out.bed", sep="\t", index=False)
+    merged.to_csv(args.outfile, sep="\t", index=False, compression="gzip")
