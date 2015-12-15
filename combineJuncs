@@ -1,4 +1,0 @@
-#!/bin/sh
-awk '{x[$4] += $5; y[$4] = $1"\t"$2"\t"$3"\t"$4; z[$4] = $6} END {for(i in x) print y[i]"\t"x[i]"\t"z[i]}' | sed '1 i\
-track name=junctions description="TopHat junctions" graphType=junctions
-'
