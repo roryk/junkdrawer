@@ -13,14 +13,13 @@ parser.add_argument("vcf", type=FileType('r'),
 args = parser.parse_args()
 
 vcf_reader = cyvcf.Reader(args.vcf)
-records = tz.take(10, vcf_reader)
 
 samples = vcf_reader.samples[1:5]
 
 header = "\t".join([str(x) for x in ["CHROM", "POS", "ID", "REF", "ALT"] + samples])
 
 print(header, file=sys.stdout)
-for record in records:
+for record in vcf_reader:
     line = [record.CHROM, record.POS, record.ID, record.REF, record.alleles[1]]
     pls = [x.data.get("PL", None) for x in record.samples[1:5]]
     pls = [x[0] if x else "-1" for x in pls]
