@@ -37,15 +37,16 @@ from argparse import ArgumentParser
 
 COL_LOOKUP = {"LIB_POOL_ID": 3, "LIBRARY_ID": 5, "LANE": 2, "SAMPLENAME": 6}
 FILE_FORMAT = ("{LIB_POOL_ID}_{LIBRARY_ID}_S{LINENUMBER}_L{LANE_PADDED}_"
-               "R1.fastq.bz")
+               "R{READ}.fastq.bz")
 
-def file_from_manifest_line(line, samplenum):
+def file_from_manifest_line(line, samplenum, read=1):
     tokens = line.split(",")
     LIB_POOL_ID = tokens[COL_LOOKUP["LIB_POOL_ID"]]
     LIBRARY_ID = tokens[COL_LOOKUP["LIBRARY_ID"]]
     LANE_PADDED = tokens[COL_LOOKUP["LANE"]].zfill(3)
     SAMPLENAME = tokens[COL_LOOKUP["SAMPLENAME"]]
     LINENUMBER = samplenum
+    READ = str(read)
     return FILE_FORMAT.format(**locals())
 
 def get_samplename(line):
@@ -55,6 +56,7 @@ def get_samplename(line):
 if __name__ == "__main__":
     parser = ArgumentParser()
     parser.add_argument("manifest", help="CSV manifest from biopolymers")
+    parser.add_argument("--paired", action="store_true", default=False, help="Libraries are paired.")
     args = parser.parse_args()
     sample_lookup = {}
     print "filename,description"
@@ -68,3 +70,6 @@ if __name__ == "__main__":
             samplenum = sample_lookup[samplename]
             filename = file_from_manifest_line(line, samplenum)
             print ",".join([filename, samplename])
+            if args.paired:
+            	filename = file_from_manifest_line(line, samplenum, 2)
+            	print ",".join([filename, samplename])
