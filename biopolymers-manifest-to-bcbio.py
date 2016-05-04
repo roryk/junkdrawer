@@ -37,7 +37,7 @@ from argparse import ArgumentParser
 
 COL_LOOKUP = {"LIB_POOL_ID": 3, "LIBRARY_ID": 5, "LANE": 2, "SAMPLENAME": 6}
 FILE_FORMAT = ("{LIB_POOL_ID}_{LIBRARY_ID}_S{LINENUMBER}_L{LANE_PADDED}_"
-               "R{READ}.fastq.bz")
+               "R{READ}.fastq.bz2")
 
 def file_from_manifest_line(line, samplenum, read=1):
     tokens = line.split(",")
