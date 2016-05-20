@@ -19,7 +19,13 @@ pip install misopy
 
 import os
 import subprocess
+import logging
 from argparse import ArgumentParser
+
+logging.basicConfig(level=logging.INFO, 
+                    format='%(asctime)s %(name)s %(levelname)s %(message)s',
+                    datefmt='%m-%d-%y %H:%M:%S')
+logger = logging.getLogger("misofy-gtf")
 
 def swapdir(filepath, dirname):
     return os.path.join(dirname, os.path.basename(filepath))
@@ -58,19 +64,26 @@ def genepred_to_UCSC_table(genepred, outdir):
             out_handle.write("\t".join([str(counter), l]))
     return out_file
 
-def make_miso_annotation(ucsc, outdir):
-    cmd = ("python gff_make_annotation.py {outdir} {outdir}")
+def make_miso_annotation(ucsc, outdir, genomename):
+    cmd = ("python gff_make_annotation.py --genome-label {genomename} {outdir} {outdir}")
     subprocess.check_call(cmd.format(**locals()), shell=True)
 
 if __name__ == "__main__":
     parser = ArgumentParser()
     parser.add_argument("gtf", help="GTF file to convert")
     parser.add_argument("outdir", help="output directory")
+    parser.add_argument("genomename", help="genome name")
     args = parser.parse_args()
 
     gtf = args.gtf
+    logger.info("Starting conversion of %s to MISO event annotation." % gtf)
     outdir = args.outdir
+    genomename = args.genomename
     safe_makedir(outdir)
+    logger.info("Converting %s to genepred format." % gtf)
     genepred = gtf_to_genepred(gtf, outdir)
+    logger.info("Converting %s to UCSC table format." % genepred)
     ucsc = genepred_to_UCSC_table(genepred, outdir)
-    make_miso_annotation(ucsc, outdir)
+    logger.info("Making MISO event annotation.")
+    make_miso_annotation(ucsc, outdir, genomename)
+    logger.info("Finished.")
