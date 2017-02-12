@@ -1,0 +1,65 @@
+```{r load-libraries}
+library(dplyr)
+library(tidyr)
+library(readr)
+library(tools)
+library(Matrix)
+library(foreach)
+library(R.utils)
+```
+
+```{r get-count-files}
+get_count_files = function(dir) {
+  countfiles = list.files(dir, pattern = "*.tsv.gz", recursive = TRUE,
+                          include.dirs = TRUE, full.names = TRUE)
+  samples = gsub("-tsv.gz.gz", "", basename(countfiles))
+  return(data.frame(countfile = countfiles, sample = samples,
+                    stringsAsFactors = FALSE))}
+countfiles = get_count_files("../data") %>%
+  tidyr::separate(sample, c("time", "replicate"),
+                  extra="drop", sep="[_|.]", remove=FALSE) %>%
+  mutate(description=paste(time, replicate, sep="_"))
+
+sparsify_indropfile = function(filename, description) {
+  sample = read_tsv(filename, progress=FALSE) %>%
+    mutate(barcode=paste(description, barcode, sep=":")) %>%
+    as.data.frame()
+  rownames(sample) = sample$barcode
+  sample$barcode = NULL
+  sample = as.matrix(sample)
+  return(Matrix(sample, sparse=TRUE))
+}
+
+sparsify_indropfiles = function(countfiles) {
+  counts = foreach(x=1:nrow(countfiles), .combine='rbind') %do% {
+    sparsify_indropfile(countfiles[x,]$countfile, countfiles[x,]$description)
+  }
+  return(t(counts))
+}
+make_sparse_indropfile = function(countfiles, outfile) {
+  if(file.exists(outfile)) {
+    return(outfile)}
+  else {
+      counts = sparsify_indropfiles(countfiles)
+      writeMM(counts, outfile)
+      write_lines(rownames(counts), paste0(outfile, ".rownames"))
+      write_lines(colnames(counts), paste0(outfile, ".colnames"))
+      return(outfile)
+    }
+}
+read_sparse_indropfile = function(filename) {
+  stem = file_path_sans_ext(filename)
+  dat = as(readMM(gzfile(filename)), "dgCMatrix")
+  rownames(dat) = read_lines(paste0(stem, ".rownames"))
+  colnames(dat) = read_lines(paste0(stem, ".colnames"))
+  return(dat)
+}
+combine_indropfiles = function(countfiles) {
+  gzipfile = "indrops.txt.gz"
+  if(!file.exists(gzipfile)) {
+    countfile = make_sparse_indropfile(countfiles, file_path_sans_ext(gzipfile))
+    gzip(countfile)
+  }
+  return(read_sparse_indropfile(gzipfile))
+}
+```
